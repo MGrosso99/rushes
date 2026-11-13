@@ -49,3 +49,12 @@
 - Sin firma de código → SmartScreen avisa la primera vez. Firmarlo requiere un certificado pago
   (o Azure Trusted Signing). Para uso personal, alcanza con verificar que el `.exe` es el que generaste vos.
 - Se instala por usuario, sin permisos de administrador.
+
+## Actualizaciones automáticas
+
+- La app consulta `api.github.com/repos/<UPDATE_REPO>/releases/latest` al abrir (sin credenciales).
+- Solo acepta un instalador `Rushes-Setup-x.y.z.exe` cuya URL sea de las Releases de ESE repo, y solo si la
+  Release publica también su `.sha256`. Verifica el hash antes de ejecutar; si no coincide, no instala.
+- Ignora drafts y prereleases. Sin internet, no muestra nada.
+- Riesgo principal: quien controle tu cuenta de GitHub puede publicar una versión. **Activá 2FA** y protegé
+  los tags (Settings → Rules → tag rulesets) para que solo vos puedas crear `v*`.

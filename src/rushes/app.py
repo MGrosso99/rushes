@@ -10,7 +10,8 @@ import threading
 import tkinter as tk
 from tkinter import messagebox, ttk
 
-from . import APP_TITLE, __version__
+from . import APP_TITLE, UPDATE_REPO, __version__
+from . import updater
 from .config import Config, config_path, find_binary, logs_dir, rclone_conf_path
 from .disks import DiskError, find_disk
 from .drive_link import LinkError
@@ -44,6 +45,7 @@ class App(tk.Tk):
         self.report_path: str | None = None
         self.events: queue.Queue = queue.Queue()
         self.busy = False
+        self.update_release: updater.Release | None = None
 
         self._build_menu()
         self._build_ui()
@@ -75,7 +77,15 @@ class App(tk.Tk):
         root = ttk.Frame(self, padding=20)
         root.pack(fill="both", expand=True)
 
-        ttk.Label(root, text=APP_TITLE, style="Title.TLabel").pack(anchor="w")
+        # Aviso de actualización (oculto hasta que haya una)
+        self.update_bar = ttk.Frame(root, padding=(10, 8), relief="solid", borderwidth=1)
+        self.update_label = ttk.Label(self.update_bar, text="")
+        self.update_label.pack(side="left")
+        self.update_btn = ttk.Button(self.update_bar, text="Actualizar", command=self._apply_update)
+        self.update_btn.pack(side="right")
+
+        self.title_label = ttk.Label(root, text=APP_TITLE, style="Title.TLabel")
+        self.title_label.pack(anchor="w")
 
         disk_row = ttk.Frame(root)
         disk_row.pack(fill="x", pady=(6, 14))
@@ -159,6 +169,10 @@ class App(tk.Tk):
     # ------------------------------------------------------------ startup
     def _startup_checks(self) -> None:
         self._refresh_disk()
+        repo = self.cfg.update_repo or UPDATE_REPO
+        if updater.updates_enabled(repo):
+            threading.Thread(target=lambda: self.events.put(("update_available", updater.check_latest(repo))),
+                             daemon=True).start()
         if not self.rclone.is_connected():
             if messagebox.askyesno(
                 APP_TITLE,
@@ -261,6 +275,19 @@ class App(tk.Tk):
             self.report_path = payload
         elif kind == "done":
             self._show_result(payload)
+        elif kind == "update_available":
+            if payload:
+                self.update_release = payload
+                self.update_label.config(text=f"Hay una versión nueva de Rushes ({payload.version}).")
+                self.update_bar.pack(fill="x", pady=(0, 12), before=self.title_label)
+        elif kind == "phase_update":
+            self.update_label.config(text=f"Bajando la actualización… {payload:.0f}%")
+        elif kind == "update_ready":
+            updater.launch_installer(payload)
+            self.destroy()
+        elif kind == "update_failed":
+            self.update_btn.config(state="normal")
+            self.update_label.config(text=str(payload))
         elif kind == "connected":
             self._set_busy(False)
             self.status_label.config(text="Cuenta de Google conectada. ✅")
@@ -287,6 +314,27 @@ class App(tk.Tk):
         self.report_btn.config(state="normal" if self.report_path else "disabled")
         self._refresh_disk()
         self.bell()
+
+    def _apply_update(self) -> None:
+        if not self.update_release:
+            return
+        if self.busy:
+            messagebox.showinfo(APP_TITLE, "Esperá a que termine la descarga y después actualizá.")
+            return
+        release = self.update_release
+        self.update_btn.config(state="disabled")
+        self.update_label.config(text="Bajando la actualización…")
+
+        def work():
+            try:
+                path = updater.download(release, lambda pct: self.events.put(
+                    ("phase_update", pct)))
+                self.events.put(("update_ready", path))
+            except Exception as exc:  # noqa: BLE001
+                log.exception("Falló la actualización")
+                self.events.put(("update_failed", "No se pudo actualizar ahora. Podés seguir usando "
+                                                  "esta versión y probar más tarde."))
+        threading.Thread(target=work, daemon=True).start()
 
     def _open_dest(self) -> None:
         if self.result:

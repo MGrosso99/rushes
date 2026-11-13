@@ -23,7 +23,15 @@
 - Conectarlo a un puerto **USB 3**.
 - Panel de control → Opciones de energía → Configuración avanzada → USB → **Suspensión selectiva: Deshabilitada**.
 
-## 3. Generar el instalador (en tu compu)
+## 3. Generar el instalador
+
+**Recomendado: GitHub Actions** (no necesitás Windows):
+
+1. Crear el repo **público** en GitHub y subirlo.
+2. En `src/rushes/__init__.py`: `UPDATE_REPO = "<tu-usuario>/rushes"` (para las actualizaciones automáticas).
+3. `git tag v0.1.0 && git push origin main v0.1.0` → en unos minutos, la Release tiene el instalador.
+
+**Alternativa: en una PC Windows**
 
 ```powershell
 git clone <repo>; cd rushes

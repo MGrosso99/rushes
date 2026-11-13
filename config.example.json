@@ -9,5 +9,6 @@
   "transfers_when_resolve_open": 1,
   "bwlimit_when_resolve_open": "",
   "min_free_margin_gb": 10,
-  "deep_check": false
+  "deep_check": false,
+  "update_repo": ""
 }

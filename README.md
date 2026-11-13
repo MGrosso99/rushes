@@ -52,7 +52,18 @@ python -m rushes --cli "<link>"   # modo consola para debug
 
 Para probar sin disco externo: en `config.json` poner `"dest_override_path": "C:\\temp\\prueba"`.
 
-## Build e instalación
+## Publicar una versión (desde la Mac, sin Windows)
+
+1. Subir `__version__` en `src/rushes/__init__.py` (ej. `0.2.0`) y commitear.
+2. `git tag v0.2.0 && git push origin main v0.2.0`
+3. GitHub Actions (`.github/workflows/release.yml`) corre los tests en Windows, arma el instalador y crea
+   la Release con `Rushes-Setup-0.2.0.exe` + `.sha256`.
+4. La próxima vez que ella abra Rushes ve "Hay una versión nueva" → **Actualizar** (baja, verifica el
+   SHA256, instala en silencio y reabre). Requiere `UPDATE_REPO = "usuario/rushes"` en `__init__.py`.
+
+`ci.yml` corre los tests en cada push.
+
+## Build local (en Windows)
 
 ```powershell
 .\scripts\fetch_vendor.ps1          # usa los hashes fijados en vendor/checksums.txt
@@ -68,4 +79,3 @@ Ver [docs/SETUP.md](docs/SETUP.md) (montaje paso a paso) y [docs/SEGURIDAD.md](d
 - Botón "Proyectos viejos" para liberar espacio (listar carpetas en `Rushes\` con peso y fecha).
 - Soportar links de archivos sueltos (`rclone backend copyid`).
 - Ícono propio (`--icon` en PyInstaller y `SetupIconFile` en Inno Setup).
-- Chequeo de actualizaciones contra GitHub Releases.

@@ -81,6 +81,8 @@ class Config:
     bwlimit_when_resolve_open: str = ""
     min_free_margin_gb: int = 10
     deep_check: bool = False
+    # Vacío = usa UPDATE_REPO del código. Solo para pisarlo (ej. un fork de pruebas).
+    update_repo: str = ""
     extra: dict = field(default_factory=dict, repr=False)
 
     @classmethod

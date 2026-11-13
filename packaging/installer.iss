@@ -19,6 +19,7 @@ OutputBaseFilename=Rushes-Setup-{#AppVersion}
 Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern
+CloseApplications=yes
 UninstallDisplayName=Rushes
 
 [Languages]
@@ -36,6 +37,8 @@ Name: "{userdesktop}\Rushes"; Filename: "{app}\Rushes.exe"; Tasks: desktopicon
 
 [Run]
 Filename: "{app}\Rushes.exe"; Description: "Abrir Rushes"; Flags: nowait postinstall skipifsilent
+; Actualización automática (instalación silenciosa): vuelve a abrir la app al terminar.
+Filename: "{app}\Rushes.exe"; Flags: nowait; Check: WizardSilent
 
 ; Nota: al desinstalar NO se borra %APPDATA%\Rushes (config + token de Google).
 ; Para revocar el acceso: borrar esa carpeta y quitar la app en myaccount.google.com/permissions.
