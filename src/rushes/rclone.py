@@ -44,7 +44,7 @@ _FRIENDLY = [
      "Se llenó el disco. Liberá espacio y volvé a intentar; lo que ya bajó no se vuelve a descargar."),
     (("no such host", "dial tcp", "network is unreachable", "connection refused", "i/o timeout",
       "tls handshake timeout"),
-     "No hay conexión a internet (o se cortó). Revisá el wifi y volvé a intentar; retoma donde quedó."),
+     "Se cortó la conexión (sin internet, o la compu se suspendió). Volvé a tocar Revisar y Descargar con el mismo link: retoma donde quedó."),
     (("ratelimitexceeded", "userratelimitexceeded", "quota"),
      "Google limitó la descarga por un rato. Esperá unos minutos y volvé a intentar."),
 ]

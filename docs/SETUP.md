@@ -18,7 +18,7 @@
 
 ## 2. Preparar el disco externo
 
-- Ponerle un nombre de volumen fijo, por ejemplo `MATERIAL` (clic derecho en el disco → Cambiar nombre).
+- Ponerle un nombre de volumen fijo, por ejemplo `RUSHES` (clic derecho en el disco → Cambiar nombre).
 - Verificar el formato (Propiedades): **NTFS** ideal, exFAT ok, **FAT32 no** (máx. 4 GB por archivo).
 - Conectarlo a un puerto **USB 3**.
 - Panel de control → Opciones de energía → Configuración avanzada → USB → **Suspensión selectiva: Deshabilitada**.
@@ -41,7 +41,7 @@ Necesitás Python 3.11+ e [Inno Setup 6](https://jrsoftware.org/isdl.php).
 3. Abrir la app una vez y cerrarla (crea `%APPDATA%\Rushes\config.json`).
 4. Editar `config.json` (menú Ayuda → Editar configuración):
    ```json
-   "disk_label": "MATERIAL",
+   "disk_label": "RUSHES",
    "google_client_id": "xxxx.apps.googleusercontent.com",
    "google_client_secret": "GOCSPX-xxxx"
    ```
@@ -62,8 +62,8 @@ Necesitás Python 3.11+ e [Inno Setup 6](https://jrsoftware.org/isdl.php).
 
 | Clave | Default | Para qué |
 |---|---|---|
-| `disk_label` | `MATERIAL` | Nombre de volumen del disco externo |
-| `base_dir` | `Material` | Carpeta raíz dentro del disco |
+| `disk_label` | `RUSHES` | Nombre de volumen del disco externo |
+| `base_dir` | `Rushes` | Carpeta raíz dentro del disco |
 | `dest_override_path` | `""` | Solo pruebas: ignora el disco y usa esta ruta |
 | `transfers` | `3` | Descargas en paralelo |
 | `transfers_when_resolve_open` | `1` | Ídem con DaVinci abierto |

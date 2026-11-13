@@ -1,6 +1,6 @@
 {
-  "disk_label": "MATERIAL",
-  "base_dir": "Material",
+  "disk_label": "RUSHES",
+  "base_dir": "Rushes",
   "dest_override_path": "",
   "rclone_remote": "gdrive",
   "google_client_id": "",

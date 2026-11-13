@@ -69,8 +69,8 @@ def find_binary(name: str) -> str | None:
 
 @dataclass
 class Config:
-    disk_label: str = "MATERIAL"
-    base_dir: str = "Material"
+    disk_label: str = "RUSHES"
+    base_dir: str = "Rushes"
     # Solo para desarrollo/pruebas: si se setea, ignora el disco y usa esta ruta.
     dest_override_path: str = ""
     rclone_remote: str = "gdrive"

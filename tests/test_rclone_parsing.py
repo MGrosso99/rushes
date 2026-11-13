@@ -28,5 +28,5 @@ def test_combined():
 def test_friendly_errors():
     assert "Conectar Google" in friendly_error("oauth2: cannot fetch token: invalid_grant")
     assert "No encontré la carpeta" in friendly_error("directory not found")
-    assert "internet" in friendly_error("dial tcp: lookup www.googleapis.com: no such host")
+    assert "Se cortó la conexión" in friendly_error("dial tcp: lookup www.googleapis.com: no such host")
     assert "Probá de nuevo" in friendly_error("algo rarísimo")

@@ -20,7 +20,7 @@ from .drive_link import DriveFolder, parse_drive_link
 from .rclone import Progress, Rclone, RcloneError
 from .report import FileResult, JobResult, format_bytes, write_report
 from .verify import deep_check, media_kind, probe
-from .winutil import is_resolve_open
+from .winutil import is_resolve_open, keep_awake
 
 log = logging.getLogger("rushes.job")
 
@@ -134,6 +134,11 @@ class Job:
         return Plan(folder, disk, dest, name, count, total, _dir_size(dest), resumed)
 
     def run(self, plan: Plan, on_event: EventFn) -> JobResult:
+        """Descarga y verifica. Mantiene la compu despierta mientras dura."""
+        with keep_awake():
+            return self._run(plan, on_event)
+
+    def _run(self, plan: Plan, on_event: EventFn) -> JobResult:
         result = JobResult(
             project_name=plan.project_name, dest=str(plan.dest),
             drive_folder_id=plan.folder.folder_id,

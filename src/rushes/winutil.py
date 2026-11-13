@@ -4,6 +4,7 @@ from __future__ import annotations
 import os
 import subprocess
 import sys
+from contextlib import contextmanager
 
 IS_WINDOWS = os.name == "nt"
 
@@ -16,6 +17,31 @@ def low_priority_popen_kwargs() -> dict:
     if IS_WINDOWS:
         return {"creationflags": BELOW_NORMAL_PRIORITY_CLASS | CREATE_NO_WINDOW}
     return {"preexec_fn": lambda: os.nice(10)}
+
+
+ES_CONTINUOUS = 0x80000000
+ES_SYSTEM_REQUIRED = 0x00000001
+
+
+@contextmanager
+def keep_awake():
+    """Evita la suspensión por inactividad mientras dura el bloque (Windows).
+
+    No impide la suspensión al CERRAR LA TAPA: eso depende de la configuración
+    de energía de Windows ("Al cerrar la tapa: No hacer nada").
+    Se llama desde el hilo que hace el trabajo (el estado es por hilo).
+    """
+    if not IS_WINDOWS:
+        yield
+        return
+    import ctypes
+
+    kernel32 = ctypes.windll.kernel32  # type: ignore[attr-defined]
+    kernel32.SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED)
+    try:
+        yield
+    finally:
+        kernel32.SetThreadExecutionState(ES_CONTINUOUS)
 
 
 def is_process_running(image_name: str) -> bool:

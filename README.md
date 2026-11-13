@@ -36,7 +36,7 @@ Link de Drive ─► drive_link (valida, extrae ID)
 | `disks.py` | Volúmenes de Windows por nombre, filesystem y espacio libre |
 | `report.py` | Resultado, reporte HTML y manifest JSON |
 
-Destino: `<Disco>:\Material\<AAAA-MM-DD> - <Nombre>\`. Datos locales en `%APPDATA%\Rushes\`
+Destino: `<Disco>:\Rushes\<AAAA-MM-DD> - <Nombre>\`. Datos locales en `%APPDATA%\Rushes\`
 (`config.json`, `rclone.conf`, `history.json`, `logs\`).
 
 ## Desarrollo
@@ -65,7 +65,7 @@ Ver [docs/SETUP.md](docs/SETUP.md) (montaje paso a paso) y [docs/SEGURIDAD.md](d
 ## Pendiente / ideas
 
 - Probar en Windows real: `config create` de rclone con el navegador y detección de volúmenes.
-- Botón "Proyectos viejos" para liberar espacio (listar carpetas en `Material\` con peso y fecha).
+- Botón "Proyectos viejos" para liberar espacio (listar carpetas en `Rushes\` con peso y fecha).
 - Soportar links de archivos sueltos (`rclone backend copyid`).
 - Ícono propio (`--icon` en PyInstaller y `SetupIconFile` en Inno Setup).
 - Chequeo de actualizaciones contra GitHub Releases.
