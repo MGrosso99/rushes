@@ -17,8 +17,26 @@ cmd = [a for a in args if not a.startswith("--")][1:]  # saca valor de --config
 op = cmd[0]
 
 
+ONLY = None
+if "--files-from-raw" in args:
+    ONLY = set(Path(args[args.index("--files-from-raw") + 1]).read_text(encoding="utf-8").split("\n")) - {""}
+
+
 def files(root):
-    return sorted(p for p in root.rglob("*") if p.is_file())
+    fs = sorted(p for p in root.rglob("*") if p.is_file())
+    if ONLY is not None:
+        fs = [p for p in fs if p.relative_to(root).as_posix() in ONLY]
+    return fs
+
+
+def should_corrupt(name):
+    if os.environ.get("FAKE_CORRUPT") == name:
+        return True
+    marker = conf.parent / f"corrupted-{name}"
+    if os.environ.get("FAKE_CORRUPT_ONCE") == name and not marker.exists():
+        marker.write_text("x")  # solo la primera vez (error transitorio)
+        return True
+    return False
 
 
 def md5(p):
@@ -43,7 +61,7 @@ elif op == "copy":
     for i, f in enumerate(fs, 1):
         target = dest / f.relative_to(drive)
         target.parent.mkdir(parents=True, exist_ok=True)
-        if os.environ.get("FAKE_CORRUPT") == f.name:
+        if should_corrupt(f.name):
             target.write_bytes(f.read_bytes()[:-10])
         else:
             shutil.copy2(f, target)

@@ -9,8 +9,11 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import subprocess
+import tempfile
 import threading
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable, Iterable
@@ -141,6 +144,24 @@ class Rclone:
             flags += ["--drive-resource-key", folder.resource_key]
         return flags
 
+    @staticmethod
+    @contextmanager
+    def _only(files: list[str] | None, force: bool = False):
+        """Flags para limitar la operación a una lista de archivos (reintentos)."""
+        if not files:
+            yield []
+            return
+        fd, path = tempfile.mkstemp(prefix="traer-", suffix=".txt")
+        try:
+            with os.fdopen(fd, "w", encoding="utf-8") as fh:
+                fh.write("\n".join(files) + "\n")
+            yield ["--files-from-raw", path] + (["--ignore-times"] if force else [])
+        finally:
+            try:
+                os.unlink(path)
+            except OSError:
+                pass
+
     def _run(self, args: list[str], timeout: int = 120) -> subprocess.CompletedProcess:
         log.debug("rclone %s", " ".join(args[3:]))  # no loguea la ruta del config
         kwargs = {"creationflags": CREATE_NO_WINDOW} if IS_WINDOWS else {}
@@ -187,7 +208,13 @@ class Rclone:
         on_progress: Callable[[Progress], None],
         cancel: threading.Event,
         bwlimit: str = "",
+        only_files: list[str] | None = None,
     ) -> None:
+        """Copia Drive -> disco. Con only_files fuerza re-descargar solo esos (reintento)."""
+        with self._only(only_files, force=True) as only:
+            self._copy(folder, dest, transfers, on_progress, cancel, bwlimit, only)
+
+    def _copy(self, folder, dest, transfers, on_progress, cancel, bwlimit, only) -> None:
         args = self._base() + [
             "copy", self._src(), str(dest),
             *self._folder_flags(folder),
@@ -197,6 +224,7 @@ class Rclone:
             "--low-level-retries", "20",
             "--use-json-log", "--stats", "1s", "--stats-log-level", "NOTICE",
             "--log-level", "NOTICE",
+            *only,
         ]
         if bwlimit:
             args += ["--bwlimit", bwlimit]
@@ -231,11 +259,15 @@ class Rclone:
             technical = "\n".join(error_lines[-20:])
             raise RcloneError(friendly_error(technical), technical)
 
-    def check(self, folder: DriveFolder, dest: Path) -> CheckResult:
+    def check(self, folder: DriveFolder, dest: Path, only_files: list[str] | None = None) -> CheckResult:
         """Compara MD5 de Drive vs archivos locales (solo en dirección Drive -> disco)."""
+        with self._only(only_files) as only:
+            return self._check(folder, dest, only)
+
+    def _check(self, folder: DriveFolder, dest: Path, only: list[str]) -> CheckResult:
         args = self._base() + [
             "check", self._src(), str(dest), *self._folder_flags(folder),
-            "--one-way", "--combined", "-", "--log-level", "ERROR",
+            "--one-way", "--combined", "-", "--log-level", "ERROR", *only,
         ]
         proc = subprocess.run(
             args, capture_output=True, text=True, encoding="utf-8", errors="replace",

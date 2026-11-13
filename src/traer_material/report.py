@@ -120,11 +120,18 @@ def render_html(result: JobResult) -> str:
     )
     c = result.counts
     help_block = ""
-    if c["error"]:
-        help_block = (
-            "<p class='help'>Para los archivos con ❌: volvé a abrir <b>Traer material</b> con el mismo link "
-            "(baja solo lo que falta). Si siguen fallando, pedile al filmmaker que los vuelva a subir.</p>"
-        )
+    transfer_failed = any(f.md5 != "ok" for f in result.files)
+    origin_failed = any(f.md5 == "ok" and f.status == "error" for f in result.files)
+    tips = []
+    if transfer_failed:
+        tips.append("Los que dicen <b>No se descargó / Llegó distinto</b> ya se reintentaron automáticamente. "
+                    "Volvé a abrir <b>Traer material</b> con el mismo link más tarde (baja solo esos); "
+                    "si siguen fallando, pedile al filmmaker que los vuelva a subir.")
+    if origin_failed:
+        tips.append("Los que llegaron <b>íntegros pero no se pueden abrir</b> son idénticos al archivo de Drive: "
+                    "el problema está en el original. Pedile al filmmaker que los vuelva a exportar o subir.")
+    if tips:
+        help_block = "".join(f"<p class='help'>{t}</p>" for t in tips)
     return f"""<!DOCTYPE html>
 <html lang="es"><head><meta charset="utf-8"><title>Reporte – {e(result.project_name)}</title>
 <style>

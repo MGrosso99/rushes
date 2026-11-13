@@ -25,6 +25,7 @@ from .winutil import is_resolve_open
 log = logging.getLogger("traer_material.job")
 
 EventFn = Callable[[str, object], None]
+MAX_RETRY_PASSES = 2  # pasadas extra para archivos que fallaron el MD5 o faltan
 _INVALID = re.compile(r'[<>:"/\\|?*\x00-\x1f]')
 
 
@@ -165,6 +166,27 @@ class Job:
         except RcloneError as exc:
             log.error("check falló: %s", exc.technical)
             raise JobError(str(exc)) from exc
+
+        # 2b) Reintentar SOLO los que fallaron (re-descarga forzada + nuevo MD5)
+        for attempt in range(1, MAX_RETRY_PASSES + 1):
+            failed = check.missing + check.differ + check.errors
+            if not failed or self.cancel.is_set():
+                break
+            log.warning("Reintento %s: %s archivos (%s)", attempt, len(failed), failed[:5])
+            on_event("phase", f"Reintentando {len(failed)} archivo(s) que no llegaron bien "
+                              f"(intento {attempt} de {MAX_RETRY_PASSES})…")
+            try:
+                self.rclone.copy(plan.folder, plan.dest, transfers, lambda p: on_event("progress", p),
+                                 self.cancel, bwlimit, only_files=failed)
+                recheck = self.rclone.check(plan.folder, plan.dest, only_files=failed)
+            except RcloneError as exc:
+                log.error("reintento falló: %s", exc.technical)
+                if not plan.disk.is_connected:
+                    raise JobError("Se desconectó el disco. Volvé a conectarlo y abrí la app de nuevo: "
+                                   "retoma donde quedó.") from exc
+                break  # se reporta lo que quedó mal; no se pierde lo bueno
+            check.ok += recheck.ok
+            check.missing, check.differ, check.errors = recheck.missing, recheck.differ, recheck.errors
 
         for name, md5 in ([(n, "ok") for n in check.ok] + [(n, "falta") for n in check.missing]
                           + [(n, "distinto") for n in check.differ] + [(n, "error") for n in check.errors]):

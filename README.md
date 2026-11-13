@@ -22,6 +22,7 @@ Link de Drive ─► drive_link (valida, extrae ID)
               ─► rclone size (resumen + chequeo de espacio)
               ─► rclone copy (prioridad baja; 1 transferencia si DaVinci está abierto)
               ─► rclone check --one-way (MD5 Drive vs disco)
+              ─► reintento: hasta 2 pasadas re-descargando SOLO los que fallaron
               ─► ffprobe     (cada video/audio se puede abrir, duración > 0)
               ─► _reporte/reporte.html + manifest.json
 ```

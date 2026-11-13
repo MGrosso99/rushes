@@ -75,6 +75,20 @@ def test_corrupt_file_detected(env, monkeypatch):
     assert [f.name for f in bad] == ["A001.mp4"] and bad[0].md5 == "distinto"
 
 
+@pytest.mark.skipif(not HAS_FFMPEG, reason="sin ffmpeg")
+def test_transient_corruption_is_retried(env, monkeypatch):
+    cfg, rclone, tmp = env
+    monkeypatch.setenv("FAKE_CORRUPT_ONCE", "A001.mp4")
+    monkeypatch.setattr("traer_material.job.find_binary", lambda n: shutil.which(n))
+    phases = []
+    job = Job(cfg, rclone)
+    result = job.run(job.prepare(LINK, "x"),
+                     lambda k, p: phases.append(p) if k == "phase" else None)
+    assert result.counts["error"] == 0
+    assert any("Reintentando 1 archivo" in p for p in phases)
+    assert len(result.files) == 3  # sin duplicados tras el reintento
+
+
 def test_not_enough_space(env):
     cfg, rclone, tmp = env
     plan = Job(cfg, rclone).prepare(LINK, "x")
