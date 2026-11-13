@@ -8,6 +8,7 @@ on:
   push:
     tags: ["v*.*.*"]
 
+# Solo lo necesario para crear la Release.
 permissions:
   contents: write
 
@@ -23,9 +24,11 @@ jobs:
 
       - name: Verificar que el tag coincide con __version__
         shell: pwsh
+        env:
+          TAG: ${{ github.ref_name }}
         run: |
           $v = (Select-String -Path src\rushes\__init__.py -Pattern '__version__ = "(.+)"').Matches[0].Groups[1].Value
-          if ("v$v" -ne "${{ github.ref_name }}") { throw "Tag ${{ github.ref_name }} != __version__ $v" }
+          if ("v$v" -ne $env:TAG) { throw "Tag $env:TAG != __version__ $v" }
 
       - name: Instalar Inno Setup
         run: choco install innosetup --no-progress -y
@@ -51,10 +54,12 @@ jobs:
           "$hash  $($exe.Name)" | Set-Content -Encoding ascii "$($exe.FullName).sha256"
           Write-Host "$($exe.Name) $hash"
 
+      # gh viene instalado en los runners de GitHub: sin Actions de terceros en el camino del instalador.
       - name: Publicar Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: |
-            packaging/Output/Rushes-Setup-*.exe
-            packaging/Output/Rushes-Setup-*.exe.sha256
-          generate_release_notes: true
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          $files = Get-ChildItem packaging\Output\Rushes-Setup-* | ForEach-Object FullName
+          gh release create $env:TAG @files --title "Rushes $env:TAG" --generate-notes

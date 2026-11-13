@@ -58,3 +58,7 @@
 - Ignora drafts y prereleases. Sin internet, no muestra nada.
 - Riesgo principal: quien controle tu cuenta de GitHub puede publicar una versión. **Activá 2FA** y protegé
   los tags (Settings → Rules → tag rulesets) para que solo vos puedas crear `v*`.
+- El workflow de release no usa Actions de terceros (publica con `gh`, que viene en el runner) y tiene
+  solo permiso `contents: write`. `actions/checkout` y `actions/setup-python` son de GitHub; para fijarlas a un
+  hash: `gh api repos/actions/checkout/commits/v4 --jq .sha` y usar `actions/checkout@<sha> # v4`.
+- Antes del primer push, los commits deben salir con tu mail noreply de GitHub, no con uno personal.
