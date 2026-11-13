@@ -1,0 +1,2 @@
+60f467265b1e312373dbcd92200c2618a74850f98d3d078e94296bb3fa2047ba  ffmpeg-release-essentials.zip
+8b4fd2737ade4e70c057ef4a49deb7cffe94b0fb9d7587c189d149823f21a1dc  rclone-v1.76.0-windows-amd64.zip
