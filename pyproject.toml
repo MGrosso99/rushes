@@ -1,0 +1,16 @@
+[project]
+name = "traer-material"
+version = "0.1.0"
+description = "Descarga material de Google Drive a un disco externo, verifica integridad y genera un reporte."
+requires-python = ">=3.11"
+dependencies = []  # Solo stdlib a propósito: más fácil de empaquetar y de auditar
+
+[project.optional-dependencies]
+dev = ["pytest", "pyinstaller"]
+
+[project.scripts]
+traer-material = "traer_material.__main__:main"
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

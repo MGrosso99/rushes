@@ -1,0 +1,13 @@
+{
+  "disk_label": "MATERIAL",
+  "base_dir": "Material",
+  "dest_override_path": "",
+  "rclone_remote": "gdrive",
+  "google_client_id": "",
+  "google_client_secret": "",
+  "transfers": 3,
+  "transfers_when_resolve_open": 1,
+  "bwlimit_when_resolve_open": "",
+  "min_free_margin_gb": 10,
+  "deep_check": false
+}
