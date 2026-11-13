@@ -125,14 +125,15 @@ def parse_combined(lines: Iterable[str]) -> CheckResult:
 
 
 class Rclone:
-    def __init__(self, exe: str, config_file: Path, remote: str = "gdrive"):
-        self.exe = exe
+    def __init__(self, exe: str | list[str], config_file: Path, remote: str = "gdrive"):
+        # exe puede ser una lista (ej. [python, fake_rclone.py]) para los tests en cualquier SO.
+        self.cmd = [exe] if isinstance(exe, str) else list(exe)
         self.config_file = config_file
         self.remote = remote
 
     # ---------- helpers ----------
     def _base(self) -> list[str]:
-        return [self.exe, "--config", str(self.config_file)]
+        return [*self.cmd, "--config", str(self.config_file)]
 
     def _src(self) -> str:
         return f"{self.remote}:"

@@ -2,7 +2,6 @@
 import json
 import os
 import shutil
-import stat
 import subprocess
 import sys
 from pathlib import Path
@@ -31,12 +30,11 @@ def env(tmp_path, monkeypatch):
     (drive / "guion.pdf").write_bytes(b"%PDF fake")
     monkeypatch.setenv("FAKE_DRIVE", str(drive))
 
-    wrapper = tmp_path / "rclone"
-    wrapper.write_text(f"#!/bin/sh\nexec {sys.executable} {Path(__file__).parent / 'fake_rclone.py'} \"$@\"\n")
-    wrapper.chmod(wrapper.stat().st_mode | stat.S_IEXEC)
+    # Se invoca vía Python (no un script sh) para que el test corra también en Windows.
+    fake = [sys.executable, str(Path(__file__).parent / "fake_rclone.py")]
 
     cfg = Config(dest_override_path=str(tmp_path / "disco"), min_free_margin_gb=0)
-    rclone = Rclone(str(wrapper), tmp_path / "appdata" / "Rushes" / "rclone.conf")
+    rclone = Rclone(fake, tmp_path / "appdata" / "Rushes" / "rclone.conf")
     rclone.config_file.parent.mkdir(parents=True, exist_ok=True)
     rclone.connect()
     return cfg, rclone, tmp_path
