@@ -4,7 +4,7 @@ import subprocess
 
 import pytest
 
-from traer_material.verify import interpret_ffprobe, probe
+from rushes.verify import interpret_ffprobe, probe
 
 
 def _out(streams, duration="12.5"):

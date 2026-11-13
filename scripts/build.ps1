@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-  Genera dist\TraerMaterial\ (PyInstaller) y el instalador packaging\Output\TraerMaterial-Setup.exe (Inno Setup).
+  Genera dist\Rushes\ (PyInstaller) y el instalador packaging\Output\Rushes-Setup.exe (Inno Setup).
   Requisitos: Python 3.11+ y Inno Setup 6 (ISCC.exe) instalados. Correr fetch_vendor.ps1 antes.
 #>
 $ErrorActionPreference = "Stop"
@@ -20,7 +20,7 @@ if ($LASTEXITCODE -ne 0) { throw "Tests fallaron" }
 
 Write-Host "PyInstaller..."
 & .\.venv\Scripts\pyinstaller.exe --noconfirm --clean --windowed `
-    --name TraerMaterial `
+    --name Rushes `
     --paths src `
     --add-data "vendor;vendor" `
     packaging\entry.py
@@ -33,7 +33,7 @@ $iscc = @(
 ) | Where-Object { Test-Path $_ } | Select-Object -First 1
 if (-not $iscc) { throw "No encuentro Inno Setup 6 (ISCC.exe). Instalalo desde jrsoftware.org." }
 
-$version = (Select-String -Path "src\traer_material\__init__.py" -Pattern '__version__ = "(.+)"').Matches[0].Groups[1].Value
+$version = (Select-String -Path "src\rushes\__init__.py" -Pattern '__version__ = "(.+)"').Matches[0].Groups[1].Value
 & $iscc "/DAppVersion=$version" packaging\installer.iss
 if ($LASTEXITCODE -ne 0) { throw "Inno Setup falló" }
-Write-Host "Instalador: packaging\Output\TraerMaterial-Setup-$version.exe"
+Write-Host "Instalador: packaging\Output\Rushes-Setup-$version.exe"

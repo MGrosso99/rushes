@@ -1,6 +1,6 @@
 """Rutas de la app y configuración local.
 
-Todo lo que es local de la usuaria vive en %APPDATA%\\TraerMaterial:
+Todo lo que es local de la usuaria vive en %APPDATA%\\Rushes:
   config.json   -> preferencias (sin secretos críticos)
   rclone.conf   -> token OAuth de Google (SENSIBLE, nunca sale de acá)
   logs\\         -> logs técnicos rotativos

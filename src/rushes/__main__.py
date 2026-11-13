@@ -1,7 +1,7 @@
 """Punto de entrada.
 
-  traer-material              -> abre la ventana
-  traer-material --cli LINK   -> modo consola (para vos, para debug)
+  rushes              -> abre la ventana
+  rushes --cli LINK   -> modo consola (para vos, para debug)
 """
 from __future__ import annotations
 
@@ -48,7 +48,7 @@ def _cli(link: str, name: str) -> int:
 
 def main() -> None:
     setup_logging()
-    parser = argparse.ArgumentParser(prog="traer-material")
+    parser = argparse.ArgumentParser(prog="rushes")
     parser.add_argument("--cli", metavar="LINK", help="modo consola con el link de Drive")
     parser.add_argument("--name", default="", help="nombre del proyecto (modo consola)")
     args = parser.parse_args()

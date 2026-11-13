@@ -1,6 +1,6 @@
 import pytest
 
-from traer_material.drive_link import LinkError, parse_drive_link
+from rushes.drive_link import LinkError, parse_drive_link
 
 FID = "1AbCdEfGhIjKlMnOpQrStUvWxYz_-123"
 

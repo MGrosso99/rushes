@@ -20,7 +20,7 @@ $ErrorActionPreference = "Stop"
 $Root    = Split-Path -Parent $PSScriptRoot
 $Vendor  = Join-Path $Root "vendor"
 $Pins    = Join-Path $Vendor "checksums.txt"
-$Tmp     = Join-Path ([IO.Path]::GetTempPath()) ("traer-vendor-" + [guid]::NewGuid())
+$Tmp     = Join-Path ([IO.Path]::GetTempPath()) ("rushes-vendor-" + [guid]::NewGuid())
 New-Item -ItemType Directory -Force -Path $Vendor, $Tmp | Out-Null
 
 function Get-Pins {

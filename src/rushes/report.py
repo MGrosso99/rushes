@@ -125,7 +125,7 @@ def render_html(result: JobResult) -> str:
     tips = []
     if transfer_failed:
         tips.append("Los que dicen <b>No se descargó / Llegó distinto</b> ya se reintentaron automáticamente. "
-                    "Volvé a abrir <b>Traer material</b> con el mismo link más tarde (baja solo esos); "
+                    "Volvé a abrir <b>Rushes</b> con el mismo link más tarde (baja solo esos); "
                     "si siguen fallando, pedile al filmmaker que los vuelva a subir.")
     if origin_failed:
         tips.append("Los que llegaron <b>íntegros pero no se pueden abrir</b> son idénticos al archivo de Drive: "

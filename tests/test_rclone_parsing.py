@@ -1,6 +1,6 @@
 import json
 
-from traer_material.rclone import friendly_error, parse_combined, parse_stats_line
+from rushes.rclone import friendly_error, parse_combined, parse_stats_line
 
 
 def test_stats_line():

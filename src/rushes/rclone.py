@@ -21,7 +21,7 @@ from typing import Callable, Iterable
 from .drive_link import DriveFolder
 from .winutil import CREATE_NO_WINDOW, IS_WINDOWS, low_priority_popen_kwargs
 
-log = logging.getLogger("traer_material.rclone")
+log = logging.getLogger("rushes.rclone")
 
 
 class RcloneError(RuntimeError):
@@ -151,7 +151,7 @@ class Rclone:
         if not files:
             yield []
             return
-        fd, path = tempfile.mkstemp(prefix="traer-", suffix=".txt")
+        fd, path = tempfile.mkstemp(prefix="rushes-", suffix=".txt")
         try:
             with os.fdopen(fd, "w", encoding="utf-8") as fh:
                 fh.write("\n".join(files) + "\n")

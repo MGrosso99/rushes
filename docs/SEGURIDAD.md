@@ -10,9 +10,9 @@
 
 | Dato | Dónde | Sensibilidad |
 |---|---|---|
-| Token OAuth (refresh token) | `%APPDATA%\TraerMaterial\rclone.conf` | **Alta**: da lectura del Drive |
-| Client ID / secret | `%APPDATA%\TraerMaterial\config.json` | Baja: Google no los trata como secretos en apps de escritorio |
-| Logs | `%APPDATA%\TraerMaterial\logs\` | Baja: nombres de archivo y errores, sin tokens |
+| Token OAuth (refresh token) | `%APPDATA%\Rushes\rclone.conf` | **Alta**: da lectura del Drive |
+| Client ID / secret | `%APPDATA%\Rushes\config.json` | Baja: Google no los trata como secretos en apps de escritorio |
+| Logs | `%APPDATA%\Rushes\logs\` | Baja: nombres de archivo y errores, sin tokens |
 
 - `%APPDATA%` solo es accesible para su usuario de Windows (y administradores).
 - `.gitignore` excluye `rclone.conf`, `config.json`, `*.token` y `.env`. **Nunca commitear credenciales.**
@@ -23,8 +23,8 @@
 
 ## Revocar acceso (si se pierde/roba la compu o se deja de usar)
 
-1. <https://myaccount.google.com/permissions> → quitar **traer-material**. Invalida el token al instante.
-2. Borrar `%APPDATA%\TraerMaterial\`.
+1. <https://myaccount.google.com/permissions> → quitar **rushes**. Invalida el token al instante.
+2. Borrar `%APPDATA%\Rushes\`.
 3. Si se filtró el client secret: Google Cloud → Credenciales → regenerar secret.
 
 ## Binarios de terceros

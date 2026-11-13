@@ -9,9 +9,9 @@ from pathlib import Path
 
 import pytest
 
-from traer_material.config import Config
-from traer_material.job import Job, JobError
-from traer_material.rclone import Rclone
+from rushes.config import Config
+from rushes.job import Job, JobError
+from rushes.rclone import Rclone
 
 FID = "1AbCdEfGhIjKlMnOpQrStUvWxYz"
 LINK = f"https://drive.google.com/drive/folders/{FID}?usp=sharing"
@@ -36,7 +36,7 @@ def env(tmp_path, monkeypatch):
     wrapper.chmod(wrapper.stat().st_mode | stat.S_IEXEC)
 
     cfg = Config(dest_override_path=str(tmp_path / "disco"), min_free_margin_gb=0)
-    rclone = Rclone(str(wrapper), tmp_path / "appdata" / "TraerMaterial" / "rclone.conf")
+    rclone = Rclone(str(wrapper), tmp_path / "appdata" / "Rushes" / "rclone.conf")
     rclone.config_file.parent.mkdir(parents=True, exist_ok=True)
     rclone.connect()
     return cfg, rclone, tmp_path
@@ -44,7 +44,7 @@ def env(tmp_path, monkeypatch):
 
 def test_full_flow(env, monkeypatch):
     cfg, rclone, tmp = env
-    monkeypatch.setattr("traer_material.job.find_binary",
+    monkeypatch.setattr("rushes.job.find_binary",
                         lambda n: shutil.which(n))
     job = Job(cfg, rclone)
     plan = job.prepare(LINK, "Casamiento: Ana/Juan")
@@ -79,7 +79,7 @@ def test_corrupt_file_detected(env, monkeypatch):
 def test_transient_corruption_is_retried(env, monkeypatch):
     cfg, rclone, tmp = env
     monkeypatch.setenv("FAKE_CORRUPT_ONCE", "A001.mp4")
-    monkeypatch.setattr("traer_material.job.find_binary", lambda n: shutil.which(n))
+    monkeypatch.setattr("rushes.job.find_binary", lambda n: shutil.which(n))
     phases = []
     job = Job(cfg, rclone)
     result = job.run(job.prepare(LINK, "x"),

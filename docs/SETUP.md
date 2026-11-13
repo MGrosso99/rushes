@@ -5,7 +5,7 @@
 > Opcional pero recomendado. Sin Client ID propio, rclone usa el suyo compartido, que funciona
 > pero tiene cuota compartida con todos los usuarios de rclone y puede ir más lento.
 
-1. <https://console.cloud.google.com> → crear proyecto `traer-material`.
+1. <https://console.cloud.google.com> → crear proyecto `rushes`.
 2. **APIs y servicios → Biblioteca** → habilitar **Google Drive API**.
 3. **Pantalla de consentimiento OAuth** (Google Auth Platform):
    - Tipo de usuario: **Externo**.
@@ -26,7 +26,7 @@
 ## 3. Generar el instalador (en tu compu)
 
 ```powershell
-git clone <repo>; cd traer-material
+git clone <repo>; cd rushes
 .\scripts\fetch_vendor.ps1 -UpdatePins   # primera vez; commiteá vendor/checksums.txt
 .\scripts\build.ps1
 ```
@@ -35,10 +35,10 @@ Necesitás Python 3.11+ e [Inno Setup 6](https://jrsoftware.org/isdl.php).
 
 ## 4. Instalar en la compu de ella
 
-1. Copiar `TraerMaterial-Setup-x.y.z.exe` y ejecutarlo. Si aparece SmartScreen:
+1. Copiar `Rushes-Setup-x.y.z.exe` y ejecutarlo. Si aparece SmartScreen:
    **Más información → Ejecutar de todas formas** (el instalador no está firmado).
-2. Se instala por usuario en `%LOCALAPPDATA%\Programs\TraerMaterial` (no pide admin) y crea el acceso directo.
-3. Abrir la app una vez y cerrarla (crea `%APPDATA%\TraerMaterial\config.json`).
+2. Se instala por usuario en `%LOCALAPPDATA%\Programs\Rushes` (no pide admin) y crea el acceso directo.
+3. Abrir la app una vez y cerrarla (crea `%APPDATA%\Rushes\config.json`).
 4. Editar `config.json` (menú Ayuda → Editar configuración):
    ```json
    "disk_label": "MATERIAL",
@@ -46,7 +46,7 @@ Necesitás Python 3.11+ e [Inno Setup 6](https://jrsoftware.org/isdl.php).
    "google_client_secret": "GOCSPX-xxxx"
    ```
 5. Abrir la app → **Conectar Google** → ella inicia sesión con SU cuenta (la que recibe las carpetas).
-   En "Google no verificó esta app": **Avanzado → Ir a traer-material** → Permitir.
+   En "Google no verificó esta app": **Avanzado → Ir a rushes** → Permitir.
 6. **Moverle la caché de DaVinci al externo**: DaVinci → Preferencias → Media Storage → agregar una
    carpeta del disco externo arriba de todo (y sacar C: si está primero).
 

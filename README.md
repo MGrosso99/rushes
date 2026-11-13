@@ -1,4 +1,4 @@
-# Traer material
+# Rushes
 
 App de escritorio para Windows que baja una carpeta compartida de Google Drive a un disco externo,
 verifica que cada archivo llegó **idéntico** (MD5 contra Drive) y que cada video **se puede abrir** (ffprobe),
@@ -7,7 +7,7 @@ y deja un reporte. Se usa a demanda: no queda nada corriendo de fondo.
 ## Para ella
 
 1. Conectar el disco externo.
-2. Abrir **Traer material** desde el escritorio.
+2. Abrir **Rushes** desde el escritorio.
 3. Pegar el link de Drive (y opcionalmente un nombre de proyecto) → **Revisar** → **Descargar**.
 4. Al terminar: ✅/❌ por archivo, **Abrir carpeta**, **Ver reporte**.
 
@@ -36,7 +36,7 @@ Link de Drive ─► drive_link (valida, extrae ID)
 | `disks.py` | Volúmenes de Windows por nombre, filesystem y espacio libre |
 | `report.py` | Resultado, reporte HTML y manifest JSON |
 
-Destino: `<Disco>:\Material\<AAAA-MM-DD> - <Nombre>\`. Datos locales en `%APPDATA%\TraerMaterial\`
+Destino: `<Disco>:\Material\<AAAA-MM-DD> - <Nombre>\`. Datos locales en `%APPDATA%\Rushes\`
 (`config.json`, `rclone.conf`, `history.json`, `logs\`).
 
 ## Desarrollo
@@ -46,8 +46,8 @@ python -m venv .venv; .\.venv\Scripts\activate
 pip install pytest
 pytest                                    # incluye un e2e con rclone falso
 .\scripts\fetch_vendor.ps1 -UpdatePins    # baja rclone/ffprobe verificando SHA256
-python -m traer_material                  # (con src en PYTHONPATH) abre la ventana
-python -m traer_material --cli "<link>"   # modo consola para debug
+python -m rushes                  # (con src en PYTHONPATH) abre la ventana
+python -m rushes --cli "<link>"   # modo consola para debug
 ```
 
 Para probar sin disco externo: en `config.json` poner `"dest_override_path": "C:\\temp\\prueba"`.
@@ -57,7 +57,7 @@ Para probar sin disco externo: en `config.json` poner `"dest_override_path": "C:
 ```powershell
 .\scripts\fetch_vendor.ps1          # usa los hashes fijados en vendor/checksums.txt
 .\scripts\build.ps1                 # tests + PyInstaller + Inno Setup
-# -> packaging\Output\TraerMaterial-Setup-<versión>.exe
+# -> packaging\Output\Rushes-Setup-<versión>.exe
 ```
 
 Ver [docs/SETUP.md](docs/SETUP.md) (montaje paso a paso) y [docs/SEGURIDAD.md](docs/SEGURIDAD.md).

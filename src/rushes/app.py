@@ -19,7 +19,7 @@ from .rclone import Progress, Rclone, RcloneError
 from .report import JobResult, format_bytes
 from .winutil import open_path
 
-log = logging.getLogger("traer_material.app")
+log = logging.getLogger("rushes.app")
 
 ICON = {"ok": "✅", "aviso": "⚠️", "error": "❌"}
 

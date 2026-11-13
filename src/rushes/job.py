@@ -22,7 +22,7 @@ from .report import FileResult, JobResult, format_bytes, write_report
 from .verify import deep_check, media_kind, probe
 from .winutil import is_resolve_open
 
-log = logging.getLogger("traer_material.job")
+log = logging.getLogger("rushes.job")
 
 EventFn = Callable[[str, object], None]
 MAX_RETRY_PASSES = 2  # pasadas extra para archivos que fallaron el MD5 o faltan
