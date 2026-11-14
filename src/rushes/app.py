@@ -11,7 +11,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 
 from . import APP_TITLE, UPDATE_REPO, __version__
-from . import updater
+from . import theme, updater
 from .config import Config, config_path, find_binary, logs_dir, rclone_conf_path
 from .disks import DiskError, NeedsDestination
 from .drive_link import LinkError
@@ -27,10 +27,12 @@ ICON = {"ok": "✅", "aviso": "⚠️", "error": "❌"}
 
 class App(tk.Tk):
     def __init__(self) -> None:
+        theme.enable_dpi_awareness()
         super().__init__()
         self.title(APP_TITLE)
-        self.geometry("720x620")
-        self.minsize(640, 560)
+        s = theme.scale(self)
+        self.geometry(f"{int(760 * s)}x{int(720 * s)}")
+        self.minsize(int(660 * s), int(600 * s))
 
         self.cfg = Config.load()
         rclone_exe = find_binary("rclone")
@@ -68,79 +70,106 @@ class App(tk.Tk):
         self.config(menu=bar)
 
     def _build_ui(self) -> None:
-        style = ttk.Style(self)
-        style.configure("Title.TLabel", font=("Segoe UI", 16, "bold"))
-        style.configure("Big.TButton", font=("Segoe UI", 11), padding=8)
-        style.configure("Error.TLabel", foreground="#b3261e")
-        style.configure("Ok.TLabel", foreground="#1e6b2e")
+        self.fonts = theme.apply(self)
+        s = theme.scale(self)
 
-        root = ttk.Frame(self, padding=20)
+        root = ttk.Frame(self, style="Bg.TFrame", padding=(24, 20, 24, 20))
         root.pack(fill="both", expand=True)
 
+        # Encabezado
+        header = ttk.Frame(root, style="Bg.TFrame")
+        header.pack(fill="x", pady=(0, 14))
+        self.title_label = ttk.Label(header, text=APP_TITLE, style="Title.TLabel")
+        self.title_label.pack(anchor="w")
+        ttk.Label(header, text="El material de Drive, directo a tu disco y verificado.",
+                  style="Subtitle.TLabel").pack(anchor="w")
+
         # Aviso de actualización (oculto hasta que haya una)
-        self.update_bar = ttk.Frame(root, padding=(10, 8), relief="solid", borderwidth=1)
-        self.update_label = ttk.Label(self.update_bar, text="")
+        self.update_bar = ttk.Frame(root, style="Banner.TFrame", padding=(14, 10))
+        self.update_label = ttk.Label(self.update_bar, text="", style="Banner.TLabel")
         self.update_label.pack(side="left")
-        self.update_btn = ttk.Button(self.update_bar, text="Actualizar", command=self._apply_update)
+        self.update_btn = ttk.Button(self.update_bar, text="Actualizar", style="Accent.TButton",
+                                     command=self._apply_update)
         self.update_btn.pack(side="right")
 
-        self.title_label = ttk.Label(root, text=APP_TITLE, style="Title.TLabel")
-        self.title_label.pack(anchor="w")
-
-        disk_row = ttk.Frame(root)
-        disk_row.pack(fill="x", pady=(6, 14))
-        self.disk_label = ttk.Label(disk_row, text="Buscando dónde guardar…", wraplength=520, justify="left")
-        self.disk_label.pack(side="left")
-        self.disk_choose = ttk.Button(disk_row, text="Elegir carpeta…", command=self._choose_destination)
+        # Tarjeta: destino
+        dest = theme.card(root, padding=14)
+        dest.outer.pack(fill="x", pady=(0, 12))
+        self.dest_card = dest
+        ttk.Label(dest, text="Dónde se guarda", style="Caption.TLabel").pack(anchor="w")
+        dest_row = ttk.Frame(dest)
+        dest_row.pack(fill="x", pady=(4, 0))
+        self.disk_label = ttk.Label(dest_row, text="Buscando…", wraplength=int(470 * s), justify="left")
+        self.disk_label.pack(side="left", fill="x", expand=True)
+        self.disk_choose = ttk.Button(dest_row, text="Elegir carpeta…", style="Link.TButton",
+                                      command=self._choose_destination)
         self.disk_choose.pack(side="right")
-        self.disk_retry = ttk.Button(disk_row, text="Reintentar", command=self._refresh_disk)
+        self.disk_retry = ttk.Button(dest_row, text="Reintentar", command=self._refresh_disk)
 
-        ttk.Label(root, text="1. Pegá el link de la carpeta de Drive").pack(anchor="w")
-        link_row = ttk.Frame(root)
-        link_row.pack(fill="x", pady=(2, 10))
+        # Tarjeta: traer material
+        main = theme.card(root, padding=18)
+        main.outer.pack(fill="x", pady=(0, 12))
+        ttk.Label(main, text="Link de la carpeta de Drive", style="Caption.TLabel").pack(anchor="w")
+        link_row = ttk.Frame(main)
+        link_row.pack(fill="x", pady=(4, 12))
         self.link_var = tk.StringVar()
-        self.link_entry = ttk.Entry(link_row, textvariable=self.link_var, font=("Segoe UI", 10))
-        self.link_entry.pack(side="left", fill="x", expand=True, ipady=4)
-        ttk.Button(link_row, text="Pegar", command=self._paste).pack(side="left", padx=(6, 0))
+        self.link_entry = ttk.Entry(link_row, textvariable=self.link_var)
+        self.link_entry.pack(side="left", fill="x", expand=True)
+        ttk.Button(link_row, text="Pegar", command=self._paste).pack(side="left", padx=(8, 0))
 
-        ttk.Label(root, text="2. Nombre del proyecto (opcional)").pack(anchor="w")
+        ttk.Label(main, text="Nombre del proyecto (opcional)", style="Caption.TLabel").pack(anchor="w")
         self.name_var = tk.StringVar()
-        ttk.Entry(root, textvariable=self.name_var, font=("Segoe UI", 10)).pack(fill="x", pady=(2, 10), ipady=4)
+        ttk.Entry(main, textvariable=self.name_var).pack(fill="x", pady=(4, 16))
 
-        actions = ttk.Frame(root)
-        actions.pack(fill="x", pady=(4, 8))
-        self.check_btn = ttk.Button(actions, text="Revisar", style="Big.TButton", command=self._prepare)
+        actions = ttk.Frame(main)
+        actions.pack(fill="x")
+        self.check_btn = ttk.Button(actions, text="Revisar", command=self._prepare)
         self.check_btn.pack(side="left")
-        self.download_btn = ttk.Button(actions, text="Descargar", style="Big.TButton",
+        self.download_btn = ttk.Button(actions, text="Descargar", style="Accent.TButton",
                                        command=self._start_download, state="disabled")
         self.download_btn.pack(side="left", padx=8)
-        self.cancel_btn = ttk.Button(actions, text="Cancelar", command=self._cancel, state="disabled")
-        self.cancel_btn.pack(side="left")
+        self.cancel_btn = ttk.Button(actions, text="Cancelar", style="Link.TButton",
+                                     command=self._cancel, state="disabled")
+        self.cancel_btn.pack(side="right")
 
-        self.summary_label = ttk.Label(root, text="", justify="left", wraplength=660)
-        self.summary_label.pack(anchor="w", pady=(4, 8))
+        self.summary_label = ttk.Label(main, text="", justify="left", wraplength=int(620 * s))
+        self.summary_label.pack(anchor="w", fill="x", pady=(14, 0))
 
-        self.progress = ttk.Progressbar(root, mode="determinate", maximum=100)
-        self.progress.pack(fill="x")
-        self.status_label = ttk.Label(root, text="", wraplength=660, justify="left")
-        self.status_label.pack(anchor="w", pady=(4, 8))
+        self.progress = ttk.Progressbar(main, mode="determinate", maximum=100,
+                                        style="Accent.Horizontal.TProgressbar")
+        self.progress.pack(fill="x", pady=(12, 0))
+        self.status_label = ttk.Label(main, text="", style="Muted.TLabel", wraplength=int(620 * s),
+                                      justify="left")
+        self.status_label.pack(anchor="w", pady=(6, 0))
 
+        # Tarjeta: resultado (aparece al terminar)
+        self.results = theme.card(root, padding=14)
+        top = ttk.Frame(self.results)
+        top.pack(fill="x", pady=(0, 6))
+        ttk.Label(top, text="Resultado", style="Caption.TLabel").pack(side="left")
+        self.report_btn = ttk.Button(top, text="Ver reporte", style="Link.TButton",
+                                     command=self._open_report, state="disabled")
+        self.report_btn.pack(side="right")
+        self.open_btn = ttk.Button(top, text="Abrir carpeta", style="Link.TButton",
+                                   command=self._open_dest, state="disabled")
+        self.open_btn.pack(side="right")
+
+        table = ttk.Frame(self.results)
+        table.pack(fill="both", expand=True)
         cols = ("estado", "archivo", "detalle")
-        self.tree = ttk.Treeview(root, columns=cols, show="headings", height=8)
+        self.tree = ttk.Treeview(table, columns=cols, show="headings", height=7)
         self.tree.heading("estado", text="")
-        self.tree.heading("archivo", text="Archivo")
-        self.tree.heading("detalle", text="Detalle")
-        self.tree.column("estado", width=40, anchor="center", stretch=False)
-        self.tree.column("archivo", width=300)
-        self.tree.column("detalle", width=320)
-        self.tree.pack(fill="both", expand=True)
-
-        bottom = ttk.Frame(root)
-        bottom.pack(fill="x", pady=(10, 0))
-        self.open_btn = ttk.Button(bottom, text="Abrir carpeta", command=self._open_dest, state="disabled")
-        self.open_btn.pack(side="left")
-        self.report_btn = ttk.Button(bottom, text="Ver reporte", command=self._open_report, state="disabled")
-        self.report_btn.pack(side="left", padx=8)
+        self.tree.heading("archivo", text="Archivo", anchor="w")
+        self.tree.heading("detalle", text="Detalle", anchor="w")
+        self.tree.column("estado", width=int(36 * s), anchor="center", stretch=False)
+        self.tree.column("archivo", width=int(280 * s), anchor="w")
+        self.tree.column("detalle", width=int(320 * s), anchor="w")
+        self.tree.tag_configure("error", background=theme.ERROR_BG)
+        self.tree.tag_configure("aviso", background=theme.WARN_BG)
+        scroll = ttk.Scrollbar(table, orient="vertical", command=self.tree.yview)
+        self.tree.configure(yscrollcommand=scroll.set)
+        self.tree.pack(side="left", fill="both", expand=True)
+        scroll.pack(side="right", fill="y")
 
     # ------------------------------------------------------------ helpers
     def _set_busy(self, busy: bool, running: bool = False) -> None:
@@ -193,7 +222,7 @@ class App(tk.Tk):
         try:
             disk, base = destination(self.cfg)
             self.disk_label.config(
-                text=f"Se guarda en: {base}  ·  {format_bytes(disk.free_bytes)} libres", style="Ok.TLabel")
+                text=f"{base}   ·   {format_bytes(disk.free_bytes)} libres", style="Path.TLabel")
             self.disk_choose.config(text="Cambiar…")
             self.disk_retry.pack_forget()
             return True
@@ -204,7 +233,7 @@ class App(tk.Tk):
         except DiskError as exc:
             self.disk_label.config(text=str(exc), style="Error.TLabel")
             self.disk_choose.config(text="Elegir otra carpeta…")
-            self.disk_retry.pack(side="right", padx=8)
+            self.disk_retry.pack(side="right", padx=(0, 8))
         return False
 
     def _choose_destination(self) -> None:
@@ -246,6 +275,7 @@ class App(tk.Tk):
     def _prepare(self) -> None:
         self.plan = None
         self.tree.delete(*self.tree.get_children())
+        self.results.outer.pack_forget()
         self.progress["value"] = 0
         self.open_btn.config(state="disabled")
         self.report_btn.config(state="disabled")
@@ -318,7 +348,7 @@ class App(tk.Tk):
             if payload:
                 self.update_release = payload
                 self.update_label.config(text=f"Hay una versión nueva de Rushes ({payload.version}).")
-                self.update_bar.pack(fill="x", pady=(0, 12), before=self.title_label)
+                self.update_bar.pack(fill="x", pady=(0, 12), before=self.dest_card.outer)
         elif kind == "phase_update":
             self.update_label.config(text=f"Bajando la actualización… {payload:.0f}%")
         elif kind == "update_ready":
@@ -345,7 +375,9 @@ class App(tk.Tk):
         self.progress["value"] = 100
         order = {"error": 0, "aviso": 1, "ok": 2}
         for f in sorted(result.files, key=lambda f: (order[f.status], f.name.lower())):
-            self.tree.insert("", "end", values=(ICON[f.status], f.name, f.detail))
+            self.tree.insert("", "end", values=(ICON[f.status], f.name, f.detail),
+                             tags=(f.status,) if f.status != "ok" else ())
+        self.results.outer.pack(fill="both", expand=True)
         ok = result.counts["error"] == 0
         self.summary_label.config(text=result.summary, style="Ok.TLabel" if ok else "Error.TLabel")
         self.status_label.config(text="Cuando cierres DaVinci, podés expulsar el disco de forma segura.")
