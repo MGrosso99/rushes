@@ -30,6 +30,8 @@ Link de Drive ─► drive_link (valida, extrae ID)
 | Módulo | Qué hace |
 |---|---|
 | `app.py` | Ventana tkinter; el trabajo corre en un hilo y avisa por una cola |
+| `theme.py` | Estilo visual: paleta, tipografía, DPI y widgets redondeados dibujados con Canvas |
+| `updater.py` | Actualización automática desde GitHub Releases (verifica SHA256) |
 | `job.py` | Orquesta prepare → run; historial link→carpeta para retomar |
 | `rclone.py` | Wrapper de rclone, parseo de progreso JSON, errores traducidos a lenguaje simple |
 | `verify.py` | ffprobe (rápido) y ffmpeg (profundo, opcional) |
