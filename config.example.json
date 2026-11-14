@@ -1,5 +1,8 @@
 {
-  "disk_label": "RUSHES",
+  "dest_folder": "",
+  "dest_volume_serial": 0,
+  "dest_volume_label": "",
+  "disk_label": "",
   "base_dir": "Rushes",
   "dest_override_path": "",
   "rclone_remote": "gdrive",

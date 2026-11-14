@@ -18,7 +18,7 @@
 
 ## 2. Preparar el disco externo
 
-- Ponerle un nombre de volumen fijo, por ejemplo `RUSHES` (clic derecho en el disco → Cambiar nombre).
+- No hace falta renombrarlo: la primera vez que abre Rushes, ella elige una carpeta en el disco (por ejemplo `E:\Rushes`) y la app la recuerda, aunque Windows le cambie la letra.
 - Verificar el formato (Propiedades): **NTFS** ideal, exFAT ok, **FAT32 no** (máx. 4 GB por archivo).
 - Conectarlo a un puerto **USB 3**.
 - Panel de control → Opciones de energía → Configuración avanzada → USB → **Suspensión selectiva: Deshabilitada**.
@@ -49,7 +49,6 @@ Necesitás Python 3.11+ e [Inno Setup 6](https://jrsoftware.org/isdl.php).
 3. Abrir la app una vez y cerrarla (crea `%APPDATA%\Rushes\config.json`).
 4. Editar `config.json` (menú Ayuda → Editar configuración):
    ```json
-   "disk_label": "RUSHES",
    "google_client_id": "xxxx.apps.googleusercontent.com",
    "google_client_secret": "GOCSPX-xxxx"
    ```
@@ -70,8 +69,9 @@ Necesitás Python 3.11+ e [Inno Setup 6](https://jrsoftware.org/isdl.php).
 
 | Clave | Default | Para qué |
 |---|---|---|
-| `disk_label` | `RUSHES` | Nombre de volumen del disco externo |
-| `base_dir` | `Rushes` | Carpeta raíz dentro del disco |
+| `dest_folder` | `""` | Carpeta donde se guarda el material (la elige ella desde la app) |
+| `dest_volume_serial` / `dest_volume_label` | `0` / `""` | Disco de esa carpeta, para encontrarlo si cambia de letra (lo completa la app) |
+| `disk_label` / `base_dir` | `""` / `Rushes` | Compatibilidad con v0.1.0 (disco por nombre); no hace falta usarlo |
 | `dest_override_path` | `""` | Solo pruebas: ignora el disco y usa esta ruta |
 | `transfers` | `3` | Descargas en paralelo |
 | `transfers_when_resolve_open` | `1` | Ídem con DaVinci abierto |

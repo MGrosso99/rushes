@@ -18,7 +18,7 @@ donde quedó (va a la misma carpeta y solo baja lo que falta).
 
 ```
 Link de Drive ─► drive_link (valida, extrae ID)
-              ─► disks      (busca el disco por NOMBRE de volumen, rechaza FAT32)
+              ─► disks      (carpeta elegida por ella; si cambia la letra del disco la encuentra por número de serie; rechaza FAT32)
               ─► rclone size (resumen + chequeo de espacio)
               ─► rclone copy (prioridad baja; 1 transferencia si DaVinci está abierto)
               ─► rclone check --one-way (MD5 Drive vs disco)
@@ -36,7 +36,7 @@ Link de Drive ─► drive_link (valida, extrae ID)
 | `disks.py` | Volúmenes de Windows por nombre, filesystem y espacio libre |
 | `report.py` | Resultado, reporte HTML y manifest JSON |
 
-Destino: `<Disco>:\Rushes\<AAAA-MM-DD> - <Nombre>\`. Datos locales en `%APPDATA%\Rushes\`
+Destino: `<carpeta elegida>\<AAAA-MM-DD> - <Nombre>\` (la primera vez la app pide elegirla; se cambia con «Cambiar…»). Datos locales en `%APPDATA%\Rushes\`
 (`config.json`, `rclone.conf`, `history.json`, `logs\`).
 
 ## Desarrollo

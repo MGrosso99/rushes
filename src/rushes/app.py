@@ -8,14 +8,14 @@ import logging
 import queue
 import threading
 import tkinter as tk
-from tkinter import messagebox, ttk
+from tkinter import filedialog, messagebox, ttk
 
 from . import APP_TITLE, UPDATE_REPO, __version__
 from . import updater
 from .config import Config, config_path, find_binary, logs_dir, rclone_conf_path
-from .disks import DiskError, find_disk
+from .disks import DiskError, NeedsDestination
 from .drive_link import LinkError
-from .job import Job, JobError, Plan
+from .job import Job, JobError, Plan, destination, set_destination
 from .rclone import Progress, Rclone, RcloneError
 from .report import JobResult, format_bytes
 from .winutil import open_path
@@ -89,8 +89,10 @@ class App(tk.Tk):
 
         disk_row = ttk.Frame(root)
         disk_row.pack(fill="x", pady=(6, 14))
-        self.disk_label = ttk.Label(disk_row, text="Buscando disco…")
+        self.disk_label = ttk.Label(disk_row, text="Buscando dónde guardar…", wraplength=520, justify="left")
         self.disk_label.pack(side="left")
+        self.disk_choose = ttk.Button(disk_row, text="Elegir carpeta…", command=self._choose_destination)
+        self.disk_choose.pack(side="right")
         self.disk_retry = ttk.Button(disk_row, text="Reintentar", command=self._refresh_disk)
 
         ttk.Label(root, text="1. Pegá el link de la carpeta de Drive").pack(anchor="w")
@@ -168,7 +170,12 @@ class App(tk.Tk):
 
     # ------------------------------------------------------------ startup
     def _startup_checks(self) -> None:
-        self._refresh_disk()
+        if not self._refresh_disk() and not self.cfg.dest_folder and not self.cfg.disk_label:
+            messagebox.showinfo(
+                APP_TITLE,
+                "Primero elegí dónde guardar el material. Conviene una carpeta en tu disco externo, "
+                "por ejemplo una llamada «Rushes».\n\nLa app la recuerda para las próximas veces.")
+            self._choose_destination()
         repo = self.cfg.update_repo or UPDATE_REPO
         if updater.updates_enabled(repo):
             threading.Thread(target=lambda: self.events.put(("update_available", updater.check_latest(repo))),
@@ -181,16 +188,48 @@ class App(tk.Tk):
                 "La app solo puede LEER tu Drive, nunca borrar ni modificar.\n\n¿Conectar ahora?"):
                 self._connect_google()
 
-    def _refresh_disk(self) -> None:
+    def _refresh_disk(self) -> bool:
+        """Muestra el destino actual. Devuelve True si está disponible."""
         try:
-            disk = find_disk(self.cfg.disk_label, self.cfg.dest_override_path)
+            disk, base = destination(self.cfg)
             self.disk_label.config(
-                text=f"Disco: {disk.label} ({disk.root.rstrip(chr(92))}) · {format_bytes(disk.free_bytes)} libres",
-                style="Ok.TLabel")
+                text=f"Se guarda en: {base}  ·  {format_bytes(disk.free_bytes)} libres", style="Ok.TLabel")
+            self.disk_choose.config(text="Cambiar…")
+            self.disk_retry.pack_forget()
+            return True
+        except NeedsDestination as exc:
+            self.disk_label.config(text=str(exc), style="Error.TLabel")
+            self.disk_choose.config(text="Elegir carpeta…")
             self.disk_retry.pack_forget()
         except DiskError as exc:
             self.disk_label.config(text=str(exc), style="Error.TLabel")
-            self.disk_retry.pack(side="left", padx=8)
+            self.disk_choose.config(text="Elegir otra carpeta…")
+            self.disk_retry.pack(side="right", padx=8)
+        return False
+
+    def _choose_destination(self) -> None:
+        if self.busy:
+            messagebox.showinfo(APP_TITLE, "Esperá a que termine lo que está haciendo y después cambiá la carpeta.")
+            return
+        folder = filedialog.askdirectory(
+            parent=self, mustexist=True,
+            title="Elegí dónde guardar el material (por ejemplo, una carpeta en tu disco externo)",
+            initialdir=self.cfg.dest_folder or None,
+        )
+        if not folder:
+            return
+        try:
+            disk = set_destination(self.cfg, folder)
+        except DiskError as exc:
+            messagebox.showerror(APP_TITLE, str(exc))
+            return
+        if disk.is_system_drive and not messagebox.askyesno(
+            APP_TITLE,
+            "Esa carpeta está en el disco de Windows (C:). El material de una boda ocupa mucho y puede "
+            "dejar la compu sin espacio.\n\n¿Usarla igual? (Lo recomendable es el disco externo.)"):
+            self.cfg.dest_folder = ""
+            self.cfg.save()
+        self._refresh_disk()
 
     def _connect_google(self) -> None:
         if self.busy:

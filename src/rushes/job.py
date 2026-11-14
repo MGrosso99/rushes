@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import Callable
 
 from .config import Config, app_data_dir, find_binary
-from .disks import DiskInfo, find_disk
+from .disks import DiskInfo, check_destination, resolve_destination
 from .drive_link import DriveFolder, parse_drive_link
 from .rclone import Progress, Rclone, RcloneError
 from .report import FileResult, JobResult, format_bytes, write_report
@@ -31,6 +31,30 @@ _INVALID = re.compile(r'[<>:"/\\|?*\x00-\x1f]')
 
 class JobError(RuntimeError):
     """Error con mensaje para la usuaria."""
+
+
+def destination(cfg: Config) -> tuple[DiskInfo, Path]:
+    """Resuelve dónde guardar. Si el disco cambió de letra, actualiza y guarda la config."""
+    disk, base = resolve_destination(
+        cfg.dest_folder, cfg.dest_volume_serial, cfg.dest_volume_label,
+        cfg.disk_label, cfg.base_dir, cfg.dest_override_path,
+    )
+    if cfg.dest_folder and not cfg.dest_override_path and str(base) != cfg.dest_folder:
+        log.info("El disco cambió de letra: %s -> %s", cfg.dest_folder, base)
+        cfg.dest_folder = str(base)
+        cfg.save()
+    return disk, base
+
+
+def set_destination(cfg: Config, folder: str) -> DiskInfo:
+    """Valida y guarda la carpeta elegida por la usuaria."""
+    disk = check_destination(folder)
+    cfg.dest_folder = str(Path(folder))
+    cfg.dest_volume_serial = disk.serial
+    cfg.dest_volume_label = disk.label
+    cfg.save()
+    log.info("Destino elegido: %s (%s)", cfg.dest_folder, disk.display_name)
+    return disk
 
 
 def sanitize_name(name: str) -> str:
@@ -112,15 +136,19 @@ class Job:
 
     def prepare(self, link: str, project_name: str) -> Plan:
         folder = parse_drive_link(link)
-        disk = find_disk(self.cfg.disk_label, self.cfg.dest_override_path)
+        disk, base = destination(self.cfg)
 
+        # Mismo link => misma carpeta (retomar), aunque el disco haya cambiado de letra.
         history = _load_history().get(folder.folder_id)
-        if history and Path(history["dest"]).drive.upper() == Path(disk.root).drive.upper():
-            dest, name, resumed = Path(history["dest"]), history["project_name"], True
+        candidate = None
+        if history:
+            candidate = base / history["rel"] if history.get("rel") else Path(history["dest"])
+        if candidate is not None and candidate.is_dir():
+            dest, name, resumed = candidate, history["project_name"], True
         else:
             name = sanitize_name(project_name or "Material")
             stamp = datetime.now().strftime("%Y-%m-%d")
-            dest = Path(disk.root) / self.cfg.base_dir / f"{stamp} - {name}"
+            dest = base / f"{stamp} - {name}"
             resumed = False
 
         try:
@@ -145,7 +173,8 @@ class Job:
             started=datetime.now().strftime("%Y-%m-%d %H:%M"),
         )
         plan.dest.mkdir(parents=True, exist_ok=True)
-        _save_history(plan.folder.folder_id, {"dest": str(plan.dest), "project_name": plan.project_name})
+        _save_history(plan.folder.folder_id, {"dest": str(plan.dest), "rel": plan.dest.name,
+                                              "project_name": plan.project_name})
 
         # 1) Descargar
         resolve_open = is_resolve_open()

@@ -69,7 +69,13 @@ def find_binary(name: str) -> str | None:
 
 @dataclass
 class Config:
-    disk_label: str = "RUSHES"
+    # Carpeta donde se guarda el material, elegida por ella la primera vez.
+    dest_folder: str = ""
+    # Número de serie y nombre del volumen de esa carpeta: si cambia la letra, se encuentra igual.
+    dest_volume_serial: int = 0
+    dest_volume_label: str = ""
+    # Compatibilidad con la v0.1.0 (disco por nombre de volumen). Vacío = no se usa.
+    disk_label: str = ""
     base_dir: str = "Rushes"
     # Solo para desarrollo/pruebas: si se setea, ignora el disco y usa esta ruta.
     dest_override_path: str = ""
